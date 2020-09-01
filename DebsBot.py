@@ -28,16 +28,20 @@ async def on_message(message):
         command = message.content.replace("db!", "")
         params = command.split()
         if command.startswith('bill'):
-            try:
-                response = requests.get(params[1])
-                embedDesc = "Yea ✅ - 0 votes\n\nNay ❌ - 0 votes\n\nAbstain 🟡 - 0 votes"
-                time.sleep(1)  # To give Discord time to process the embed. Reduces the chance of a "No titles found"
-                # error preventing the message from going through.
-                billEmbed = discord.Embed(title="Vote on Bill", description=embedDesc, color=16711680, url=params[1])
-                await message.channel.send('Please vote on "' + message.embeds[0].title + '" <@&717451321636290611>', embed=billEmbed)
-            except requests.exceptions.MissingSchema as exception:
-                await message.channel.send('Not a valid URL.')
-                print(f'Illegal URL logged when attempting to create bill vote.')
+            if roleCheck(message.author.roles, 'Election Committee'):
+                try:
+                    response = requests.get(params[1])
+                    embedDesc = "Yea ✅ - 0 votes\n\nNay ❌ - 0 votes\n\nAbstain 🟡 - 0 votes"
+                    time.sleep(1)  # To give Discord time to process the embed. Reduces the chance of a "No titles found"
+                    # error preventing the message from going through.
+                    billEmbed = discord.Embed(title="Vote on Bill", description=embedDesc, color=16711680, url=params[1])
+                    await message.channel.send('Please vote on "' + message.embeds[0].title + '" <@&717451321636290611>', embed=billEmbed)
+                except requests.exceptions.MissingSchema as exception:
+                    await message.channel.send('Not a valid URL.')
+                    print(f'Illegal URL logged when attempting to create bill vote.')
+                else:
+                    await message.channel.send('You do not have permission to start a vote.')
+                    print(f'Illegal vote attempt recorded by user ' + message.author.name)
         else:
             await message.channel.send('Incorrect command. db!help for a list of available commands.')
 
@@ -45,7 +49,7 @@ async def on_message(message):
 @client.event
 async def on_reaction_add(reaction, user):
     if reaction.message.author.id == 750193408781451264 and reaction.message.content.startswith('Please vote on') and user.id != 750193408781451264:
-        if roleCheck(user.roles, 'Vote Manager') and reaction.emoji == '🔐':
+        if roleCheck(user.roles, 'Election Committee') and reaction.emoji == '🔐':
             await reaction.message.edit(content='Vote closed!')
             await reaction.message.channel.send(countVotes(reaction.message.reactions[0].count - 1, reaction.message.reactions[1].count - 1))
         elif roleCheck(user.roles, 'Congress of the Syndicates') and await userCheck(user, reaction.message, reaction.emoji):

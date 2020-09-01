@@ -36,12 +36,13 @@ async def on_message(message):
                     # error preventing the message from going through.
                     billEmbed = discord.Embed(title="Vote on Bill", description=embedDesc, color=16711680, url=params[1])
                     await message.channel.send('Please vote on "' + message.embeds[0].title + '" <@&717451321636290611>', embed=billEmbed)
+                    await message.delete()
                 except requests.exceptions.MissingSchema as exception:
                     await message.channel.send('Not a valid URL.')
                     print(f'Illegal URL logged when attempting to create bill vote.')
-                else:
-                    await message.channel.send('You do not have permission to start a vote.')
-                    print(f'Illegal vote attempt recorded by user ' + message.author.name)
+            else:
+                await message.channel.send('You do not have permission to start a vote.')
+                print(f'Illegal vote attempt recorded by user ' + message.author.name)
         else:
             await message.channel.send('Incorrect command. db!help for a list of available commands.')
 
